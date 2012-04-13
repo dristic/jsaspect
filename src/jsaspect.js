@@ -19,12 +19,48 @@
 jsaspect = (function () {
   var aspects = {};
   
+  /**
+   * Parses a conditions string into object form.
+   * Example:
+   * conditions - 'execute(add) execute(remove)'
+   * return - [
+   *  { type: 'execute', member: 'add' },
+   *  { type: 'execute', member: 'remove' }
+   * ] 
+   */
+  function parseConditions(conditions) {
+    var arr = [];
+    
+    arr = conditions.match(/[A-z]*\([A-z]*\)/g);
+    
+    var i = 0,
+        ln = arr.length;
+    for(; i != ln; i++) {
+      var str = arr[i];
+      
+      str = str.split('(');
+      
+      arr[i] = {
+        type: str[0],
+        member: str[1].split(')')[0]
+      };
+    }
+    
+    return arr;
+  };
+  
   return {
+    /**
+     * Defines a new aspect in one call.
+     * @param name {String} The name of the new aspect.
+     * @param aspect {Object} The aspect configuration.
+     * @returns {Object} The aspect object.
+     */
     define: function (name, aspect) {
       // Generate pointcuts.
       for(var key in aspect.pointcuts) {
         var cut = aspect.pointcuts[key],
-            conditions = cut.conditions[0].split(' ');
+            conditions = parseConditions(cut.conditions);
         
         if(conditions[0] == 'call' && conditions[1] != null) {
           // Link with after/before/around.
